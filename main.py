@@ -28,7 +28,7 @@ def dist(pos1, pos2):
 class Camera:
     def __init__(self):
         self.pos = [0, 0, 60]
-        self.angleX = math.pi / 180 * 100  # x 시야각
+        self.angleX = math.pi / 180 * 30  # x 시야각
         self.angleY = math.atan(math.tan(self.angleX / 2) * screenSize[1] / screenSize[0]) * 2  # y 시야각
 
     def display(self):
