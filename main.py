@@ -30,20 +30,19 @@ class Camera:
         self.pos = [0, 0, 60]
         self.angleX = math.pi / 180 * 100  # x 시야각
         self.angleY = math.atan(math.tan(self.angleX / 2) * screenSize[1] / screenSize[0]) * 2  # y 시야각
+        self.focalLength = 300
 
     def display(self):
         for i in mapCord:
-            angleX = math.asin(i[0] / dist(i, self.pos))
-            if angleX <= math.pi:
-                x = screenSize[0] / self.angleX * angleX
-            else:
-                x = screenSize[0] / self.angleX * (angleX - 2 * math.pi)
+            dx = i[0] - self.pos[0]
+            dy = i[1] - self.pos[1]
+            dz = i[2] - self.pos[2]
 
-            angleY = math.asin(i[1] / dist(i, self.pos))
-            if angleY <= math.pi:
-                y = screenSize[1] / self.angleY * angleY
-            else:
-                y = screenSize[1] / self.angleY * (angleY - 2 * math.pi)
+            x = self.focalLength * dx / dz
+            y = self.focalLength * dy / dz
+
+            y *= screenSize[0] / screenSize[1]
+
             pygame.draw.circle(screen, (0, 0, 0), [x + screenSize[0] / 2, y + screenSize[1] / 2], 1)
 
     def move(self):
@@ -54,7 +53,6 @@ class Camera:
             if event.key == pygame.K_s:
                 self.pos[2] -= 0.1
                 print(self.pos[2])
-
 
 James = Camera()
 
