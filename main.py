@@ -13,64 +13,73 @@ fps = 240
 clock = pygame.time.Clock()
 pygame.key.set_repeat(10)
 
-
-mapCord = []
-n = 200
-for j in range(n + 1):
-    for i in range(n + 1):
-        mapCord.append([i - n / 2, j - n / 2])
+objects = []
 
 
-def dist(pos1, pos2):
-    return math.sqrt((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2)
+def cube(n,i):
+    objects.append([[1 + n, 1 + i, -1], [1 + n, 1 + i, 1], [1 + n, -1 + i, 1], [1 + n, -1 + i, -1], [1 + n, 1 + i, -1]])
+    objects.append([[-1 + n, 1 + i, -1], [-1 + n, 1 + i, 1], [-1 + n, -1 + i, 1], [-1 + n, -1 + i, -1], [-1 + n, 1 + i, -1]])
+    objects.append([[-1  + n, -1 + i, -1], [-1 + n, -1 + i, 1], [1 + n, -1 + i, 1], [1 + n, -1 + i, -1], [-1 + n, -1 + i, -1]])
+    objects.append([[-1 + n, 1 + i, -1], [-1 + n, 1 + i, 1], [1 + n, 1 + i, 1], [1 + n, 1 + i, -1], [-1 + n, 1 + i, -1]])
+
+
+for i in range(10):
+    cube(2, i * 4)
+    cube(-2, i * 4)
+
 
 
 class Camera:
     def __init__(self):
-        self.pos = [0, 0, -100]
-        self.angle = [0, 0]
-        self.focalLength = -100
-        self.pov = math.pi / 180 * 120
+        self.pos = [0, -4, 0]
+        self.depth = 600
+        self.angle = 0
 
     def display(self):
-        for i in mapCord:
-            d = [0, 0]
-            cor = [0, 0]
-            tan = [0, 0]
-            condition = [0, 0]
+        for j in objects:
+            for i in range(len(j) - 1):
+                dx1 = j[i][0] - self.pos[0]
+                dy1 = j[i][1] - self.pos[1]
+                dz1 = j[i][2] - self.pos[2]
+                dx2 = j[i + 1][0] - self.pos[0]
+                dy2 = j[i + 1][1] - self.pos[1]
+                dz2 = j[i + 1][2] - self.pos[2]
 
-            for j in range(2):
-                d[j] = i[j] - self.pos[j]
-                if self.angle[j] > math.pi:
-                    self.angle[j] = math.pi * -1
-                elif self.angle[j] < math.pi * -1:
-                    self.angle[j] = math.pi
-                tan[j] = math.atan(d[j] / self.pos[2]) + self.angle[j]
-                if self.pov / 2 >= tan[j] >= self.pov / -2:
-                    condition[j] = 1
-                    cor[j] = self.focalLength * math.tan(tan[j])
+                translatedx1 = dx1 * math.cos(-1 * self.angle) + dy1 * math.sin(-1 * self.angle)
+                translatedy1 = dy1 * math.cos(-1 * self.angle) - dx1 * math.sin(-1 * self.angle)
+                translatedx2 = dx2 * math.cos(-1 * self.angle) + dy2 * math.sin(-1 * self.angle)
+                translatedy2 = dy2 * math.cos(-1 * self.angle) - dx2 * math.sin(-1 * self.angle)
 
-            if 0 in condition:
-                continue
-            pygame.draw.circle(screen, (0, 0, 0), [cor[0] + screenSize[0] / 2, cor[1] * -1 + screenSize[1] / 2], 1)
+                if translatedy1 <= 0 and translatedy2 <= 0:
+                    continue
+
+                if translatedy1 < 0:
+                    translatedy1 *= -1
+                if translatedy2 < 0 :
+                    translatedy2 *= -1
+
+                pygame.draw.line(screen, (0, 0, 0),
+                                 (self.depth * translatedx1 / translatedy1 + screenSize[0] / 2, self.depth * dz1 / translatedy1 * -1 + screenSize[1] / 2),
+                                 (self.depth * translatedx2 / translatedy2 + screenSize[0] / 2, self.depth * dz2 / translatedy2 * -1 + screenSize[1] / 2))
+
 
     def move(self):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_d:
-                self.angle[0] += math.pi / 180 * 1
-            if event.key == pygame.K_a:
-                self.angle[0] -= math.pi / 180 * 1
-            if event.key == pygame.K_w:
-                self.angle[1] += math.pi / 180 * 1
-            if event.key == pygame.K_s:
-                self.angle[1] -= math.pi / 180 * 1
-            if event.key == pygame.K_0:
-                self.pos[2] += 1
-            if event.key == pygame.K_9:
-                self.pos[2] -= 1
+        if event.key == pygame.K_a:
+            self.angle -= math.pi / 180 * 1
+            print(self.angle / math.pi * 180)
+        if event.key == pygame.K_d:
+            self.angle += math.pi / 180 * 1
+            print(self.angle / math.pi * 180)
+        if event.key == pygame.K_w:
+            self.pos[1] += 0.1 * math.cos(self.angle)
+            self.pos[0] += 0.1 * math.sin(self.angle)
+        if event.key == pygame.K_s:
+            self.pos[1] -= 0.1 * math.cos(self.angle)
+            self.pos[0] -= 0.1 * math.sin(self.angle)
 
 
 James = Camera()
+
 
 while True:
     clock.tick(fps)
@@ -82,6 +91,7 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-        James.move()
+        if event.type == pygame.KEYDOWN:
+            James.move()
 
     pygame.display.update()
