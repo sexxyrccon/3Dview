@@ -76,6 +76,10 @@ class Camera:
         if event.key == pygame.K_s:
             self.pos[1] -= 0.1 * math.cos(self.angle)
             self.pos[0] -= 0.1 * math.sin(self.angle)
+        if event.key == pygame.K_0:
+            self.pos[2] += 0.1
+        if event.key == pygame.K_9:
+            self.pos[2] -= 0.1
 
 
 James = Camera()
